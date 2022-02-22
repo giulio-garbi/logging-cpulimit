@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class LogLine {
-	protected final String kind;
+	public final String kind;
 	public final String taskName;
 	public final String entryName;
 	public final String client;

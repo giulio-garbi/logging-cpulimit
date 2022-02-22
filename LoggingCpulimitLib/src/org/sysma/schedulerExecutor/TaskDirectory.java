@@ -19,7 +19,12 @@ public class TaskDirectory {
 	private static URI registry;
 	
 	public static HttpTask instantiateRegistry(int port) {
-		var ht = new Registry().instantiate(port, 0, 1);
+		return instantiateRegistry(port, 1);
+	}
+	
+
+	public static HttpTask instantiateRegistry(int port, int mult) {
+		var ht = new Registry().instantiate(port, 0, mult);
 		setRegistry(URI.create("http://localhost:"+port));
 		return ht;
 	}

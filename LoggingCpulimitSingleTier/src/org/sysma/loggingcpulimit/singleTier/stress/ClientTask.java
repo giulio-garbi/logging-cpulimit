@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import org.sysma.schedulerExecutor.Communication;
-import org.sysma.schedulerExecutor.MainTaskDefinition;
+import org.sysma.schedulerExecutor.estimation.EstimationTask;
 
-public class ClientTask extends MainTaskDefinition<Void> {
+public class ClientTask extends EstimationTask<Void> {
 	
 	@Override
 	public void main(Communication comm, Void arg) throws InterruptedException {

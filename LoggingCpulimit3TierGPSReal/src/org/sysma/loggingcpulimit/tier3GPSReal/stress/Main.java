@@ -37,6 +37,14 @@ public class Main {
 					return;
 				}
 			break;
+			case "reg":
+				if(args.length == 2) {
+					mainReg(args);
+				} else {
+					usage();
+					return;
+				}
+			break;
 			default:
 				usage();
 				return;
@@ -46,7 +54,8 @@ public class Main {
 	public static void usage() {
 		System.out.println("Usage:");
 		System.out.println("cli <n_cli> <think_ms> <batch_ms> <reg_URI> <out_file>");
-		System.out.println("srv <srv1_itr> <srv2_itr> <srv3_itr> <reg_port> <srv1_port> <srv2_port> <srv3_port>");
+		System.out.println("srv <srv1_itr> <srv2_itr> <srv3_itr> <reg_URI> <srv1_port> <srv2_port> <srv3_port>");
+		System.out.println("reg <reg_port>");
 	}
 	
 	public static void mainCli(String[] args) throws IOException {
@@ -77,13 +86,12 @@ public class Main {
 		long srv2 = Long.parseLong(args[2]);
 		long srv3 = Long.parseLong(args[3]);
 		
-		int regport = Integer.parseInt(args[4]);
+		URI regURI = URI.create(args[4]);
 		int srv1port = Integer.parseInt(args[5]);
 		int srv2port = Integer.parseInt(args[6]);
 		int srv3port = Integer.parseInt(args[7]);
 		
-		var registry = TaskDirectory.instantiateRegistry(regport, 9999);
-		registry.start();
+		TaskDirectory.setRegistry(regURI);
 		
 		System.out.println("I&R Service 1");
 		TierOne.n_iter = srv1;
@@ -102,5 +110,13 @@ public class Main {
 		var s3tk = TaskDefinition.instantiate(TierThree.class, srv3port, 9999);
 		s3tk.start();
 		TaskDirectory.register(TierThree.class, srv3port);
+	}
+	
+	public static void mainReg(String[] args) throws IOException {
+		int regport = Integer.parseInt(args[1]);
+		
+		System.out.println("I&R Registry");
+		var registry = TaskDirectory.instantiateRegistry(regport, 9999);
+		registry.start();
 	}
 }

@@ -15,12 +15,14 @@ import org.sysma.schedulerExecutor.MainTaskDefinition;
 public abstract class EstimationTask<T> extends MainTaskDefinition<T> {
 	HashMap<String, Double> rtMean = null;
 	HashMap<String, Double> thrMean = null;
+	int nClients;
 
 	public void estimateEntriesRTAndThroughput(Duration length, Duration waitBeforeCollect, int nClients, Function<Integer, T> fArgs) throws IOException {
 		HashMap<String, BatchMeans> rtBatches = new HashMap<>();
 		//HashMap<String, BatchMeans> thrBatches = new HashMap<>();
 		HashMap<String, BatchMeans> tbcBatches = new HashMap<>();
 		boolean converged;
+		this.nClients = nClients;
 		
 		do {
 			ArrayList<String> logParts = startRegistry(length, waitBeforeCollect, nClients, fArgs);
@@ -126,6 +128,7 @@ public abstract class EstimationTask<T> extends MainTaskDefinition<T> {
 	
 	public String makeCSV() {
 		StringBuilder csv = new StringBuilder();
+		csv.append("cli; entry; Client-main; "+nClients+"\n");
 		rtMean.forEach((te, rt)->{
 			csv.append("response time; entry; "+te+"; "+rt+"\n");
 		});

@@ -17,8 +17,8 @@ public class TierOne extends TaskDefinition {
 		comm.asyncCallRegistry("srv2", "service", x->{}).get().close();
 		
 		//task: compute `mtxOut = mtxIn * mtxIn` n_iter times
-		int[][] mtxIn = new int [60][60];
-		int[][] mtxOut = new int [60][60];
+		int[][] mtxIn = new int [20][20];
+		int[][] mtxOut = new int [20][20];
 		for(long i=0; i<n_iter; i++) {
 			for(int a=0; a<mtxOut.length; a++) {
 				for(int b=0; b<mtxOut[a].length; b++) {

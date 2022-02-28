@@ -1,1 +1,1 @@
-sudo cgexec -g cpu:3tier --sticky java -Djava.compiler=NONE -jar three_tier.jar srv 22 50 36 9000 9001 9002 9003
+sudo cgexec -g cpu:3tier --sticky java -Djava.compiler=NONE -jar ../../data/tier3GPSReal/three_tier.jar srv 22 50 36 9000 9001 9002 9003

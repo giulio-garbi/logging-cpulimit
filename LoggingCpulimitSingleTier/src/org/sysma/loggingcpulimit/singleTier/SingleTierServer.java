@@ -14,7 +14,7 @@ public class SingleTierServer extends TaskDefinition {
 	private static final AtomicInteger clientsUsing = new AtomicInteger(0);
 	@EntryDef("/service")
 	public void service(Communication comm) throws IOException, InterruptedException {
-		double sTime = 50 * Math.max(1.0, clientsUsing.incrementAndGet()/nCores);
+		double sTime = 250 * Math.max(1.0, clientsUsing.incrementAndGet()/nCores);
 		Thread.sleep((int)sTime);
 		clientsUsing.decrementAndGet();
 		comm.respond(200, "hello world".getBytes());

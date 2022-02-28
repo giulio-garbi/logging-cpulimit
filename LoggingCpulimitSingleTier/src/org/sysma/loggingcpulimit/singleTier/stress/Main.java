@@ -13,18 +13,20 @@ import org.sysma.schedulerExecutor.TaskDirectory;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
-		int nCli = args.length>0?Integer.parseInt(args[0]):1;
-		int nSrv = args.length>0?Integer.parseInt(args[1]):1;
-		String outFn = args.length>0?args[2]:null;
+		int nCli = args.length>0?Integer.parseInt(args[0]):10;
+		int nSrv = args.length>0?Integer.parseInt(args[1]):7;
+		int regport = args.length>0?Integer.parseInt(args[2]):9099;
+		int srvport = args.length>0?Integer.parseInt(args[3]):9081;
+		String outFn = args.length>0?args[4]:null;
 		
 		SingleTierServer.nCores = nSrv;
 		
-		var registry = TaskDirectory.instantiateRegistry(9099, 9999);
+		var registry = TaskDirectory.instantiateRegistry(regport, 9999);
 		registry.start();
 		System.out.println("I&R Service ");
-		var atk = TaskDefinition.instantiate(SingleTierServer.class, 9081, 9999);
+		var atk = TaskDefinition.instantiate(SingleTierServer.class, srvport, 9999);
 		atk.start();
-		TaskDirectory.register(SingleTierServer.class, 9081);
+		TaskDirectory.register(SingleTierServer.class, srvport);
 		
 		ClientTask cli = new ClientTask();
 		cli.estimateEntriesRTAndThroughput(Duration.ofSeconds(50), Duration.ofSeconds(1), nCli, x->null);

@@ -1,0 +1,8 @@
+response time; entry; Client-main; 5.201169277492322
+response time; entry; srv1-service; 5.05646662963064
+response time; entry; srv2-service; 4.023376257796036
+response time; entry; srv3-service; 1.6148254589030617
+throughput; entry; Client-main; 19.24570350011668
+throughput; entry; srv1-service; 19.24570317331325
+throughput; entry; srv2-service; 18.971226997706708
+throughput; entry; srv3-service; 18.885428291458922

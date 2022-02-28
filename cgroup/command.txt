@@ -1,0 +1,16 @@
+
+#create group 3tier attaching the cpu controller
+sudo cgcreate -g cpu:3tier
+ 
+#get infos about controller cpu of attached to the group 3tier sudo
+sudo cgget -g cpu:3tier
+
+#delete group 3tier
+sudo cgdelete -g cpu:3tier 
+
+#set the cpu period and quota for a group (limiting to 10% of utilization)
+sudo cgset -r cpu.cfs_period_us=100000 3tier  
+sudo cgset -r cpu.cfs_quota_us=10000 3tier
+
+#run a command inside a group
+sudo cgexec -g cpu:3tier --sticky <COMMANDD>

@@ -1,9 +1,9 @@
 cli; entry; Client-main; 5
-response time; entry; Client-main; 0.8200000047683715
-response time; entry; srv1-service; 0.6605171493121558
-response time; entry; srv2-service; 0.5155466641698565
-response time; entry; srv3-service; 0.2094085706131799
-throughput; entry; Client-main; 6.172077684855554
-throughput; entry; srv1-service; 6.1717509773451145
-throughput; entry; srv2-service; 6.170989167207834
-throughput; entry; srv3-service; 6.170699034167912
+response time; entry; Client-main; 0.8213502825316737
+response time; entry; srv1-service; 0.6604553622714544
+response time; entry; srv2-service; 0.5156129851179606
+response time; entry; srv3-service; 0.20911920398978867
+throughput; entry; Client-main; 6.128002535505533
+throughput; entry; srv1-service; 6.128002563958481
+throughput; entry; srv2-service; 6.128257152522936
+throughput; entry; srv3-service; 6.128575451178925

@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats as st
 
 class MsLog:
     def __init__(self, name):
@@ -28,6 +29,11 @@ class MsStats:
             self.rtBatchesNum[label] >= N and \
             self.thrMean[label] is not None for label in self.rtCI])
 
+    def dump(self):
+        for label in self.rtCI:
+            print(label," rt ",self.rtMean[label],' +/- ',abs(self.rtCI[label][0]-self.rtMean[label]))
+            print(label," thr ",self.thrMean[label])
+
     
 
 class MsLogConsumer:
@@ -56,6 +62,7 @@ class MsLogConsumer:
                 self.epIdxs[label] = epIdx
 
                 self.rtBatches.append([])
+                self.rtSamples.append(0)
                 self.dtExitSums.append(0.0)
                 self.dtExitSamples.append(0)
             else:
@@ -90,8 +97,13 @@ class MsLogConsumer:
         stats = MsStats()
         for label in self.epIdxs:
             epIdx = self.epIdxs[label]
-            rtMeans = np.mean(np.array(self.rtBatches[epIdx][0:self.rtSamples[epIdx]//self.K]), axis=1)
-            CI = st.t.interval(0.99, len(rtMeans[1:]) - 1, loc=np.mean(rtMeans[1:]), scale=st.sem(rtMeans[1:]))
+            if self.rtSamples[epIdx] < 2*self.K:
+                rtMeans = np.array([float('NaN'), float('NaN')])
+                CI = (float('NaN'), float('NaN'))
+            else:
+                rtarr = np.array(self.rtBatches[epIdx][0:self.rtSamples[epIdx]//self.K])
+                rtMeans = np.mean(rtarr, axis=1)
+                CI = st.t.interval(0.99, len(rtMeans[1:]) - 1, loc=np.mean(rtMeans[1:]), scale=st.sem(rtMeans[1:]))
             stats.rtCI[label] = CI
             stats.rtMean[label] = np.mean(rtMeans[1:])
             stats.rtBatchesNum[label] = self.rtSamples[epIdx]//self.K
@@ -99,3 +111,4 @@ class MsLogConsumer:
                 stats.thrMean[label] = self.dtExitSamples[epIdx]/self.dtExitSums[epIdx]
             else:
                 stats.thrMean[label] = None
+        return stats

@@ -55,7 +55,9 @@ class MsLogConsumer:
                 epIdx = len(self.epIdxs)
                 self.epIdxs[label] = epIdx
 
-                self.rtBatches.append
+                self.rtBatches.append([])
+                self.dtExitSums.append(0.0)
+                self.dtExitSamples.append(0)
             else:
                 epIdx = self.epIdxs[label]
 
@@ -93,4 +95,7 @@ class MsLogConsumer:
             stats.rtCI[label] = CI
             stats.rtMean[label] = np.mean(rtMeans[1:])
             stats.rtBatchesNum[label] = self.rtSamples[epIdx]//self.K
-            stats.thrMean[label] = self.dtExitSamples[epIdx]/self.dtExitSums[epIdx]
+            if self.dtExitSums[epIdx] > 0:
+                stats.thrMean[label] = self.dtExitSamples[epIdx]/self.dtExitSums[epIdx]
+            else:
+                stats.thrMean[label] = None

@@ -17,6 +17,14 @@ class LogLine:
         self.exitTimeS = float(exitTimeS)
         self.rtS = float(rtS)
 
+    def __str__(self):
+        return str(self.exitTimeS)+" "+str(self.rtS)+" "+self.endpoint
+
+    @staticmethod
+    def fromString(s):
+        parts = s.split(" ",2)
+        return LogLine(parts[2], parts[0], parts[1])
+
 class MsStats:
     def __init__(self):
         self.rtCI = dict()
@@ -34,6 +42,33 @@ class MsStats:
             print(label," rt ",self.rtMean[label],' +/- ',abs(self.rtCI[label][0]-self.rtMean[label]))
             print(label," thr ",self.thrMean[label])
 
+    def __str__(self):
+        ans = ""
+        for (label,ci) in self.rtCI.items():
+            ans+="rtCI "+str(ci[0])+" "+str(ci[1])+" "+label+"\n"
+        for (label,m) in self.rtMean.items():
+            ans+="rtMean "+str(m)+" "+label+"\n"
+        for (label,bn) in self.rtBatchesNum.items():
+            ans+="rtBatchesNum "+str(bn)+" "+label+"\n"
+        for (label,t) in self.thrMean.items():
+            ans+="thrMean "+str(t)+" "+label+"\n"
+        return ans
+
+    @staticmethod
+    def fromString(s):
+        ans = MsStats()
+        for line in s.splitlines():
+            if len(line)>0:
+                parts = line.split()
+                if parts[0] == "rtCI":
+                    ans.rtCI[parts[3]] = (float(parts[1]),float(parts[2]))
+                elif parts[0] == "rtMean":
+                    ans.rtMean[parts[2]] = float(parts[1])
+                elif parts[0] == "rtBatchesNum":
+                    ans.rtBatchesNum[parts[2]] = int(parts[1])
+                elif parts[0] == "thrMean":
+                    ans.thrMean[parts[2]] = float(parts[1])
+        return ans
     
 
 class MsLogConsumer:
@@ -97,7 +132,7 @@ class MsLogConsumer:
         stats = MsStats()
         for label in self.epIdxs:
             epIdx = self.epIdxs[label]
-            if self.rtSamples[epIdx] < 2*self.K:
+            if self.rtSamples[epIdx] < 3*self.K:
                 rtMeans = np.array([float('NaN'), float('NaN')])
                 CI = (float('NaN'), float('NaN'))
             else:
@@ -108,6 +143,7 @@ class MsLogConsumer:
             stats.rtMean[label] = np.mean(rtMeans[1:])
             stats.rtBatchesNum[label] = self.rtSamples[epIdx]//self.K
             if self.dtExitSums[epIdx] > 0:
+                #print(label, self.dtExitSamples[epIdx], self.dtExitSums[epIdx])
                 stats.thrMean[label] = self.dtExitSamples[epIdx]/self.dtExitSums[epIdx]
             else:
                 stats.thrMean[label] = None

@@ -7,6 +7,7 @@ from batchmeans import *
 from urllib.request import urlopen
 import time
 from multiprocessing import *
+from matfile import *
 
 def get_logs(client, container):
 	logsTxt = []
@@ -23,31 +24,69 @@ def get_logs(client, container):
 						logsTxt.append((logfile.read()))
 	return logsTxt
 
-def rm_logs(client, container):
-	pass
+def change_cpu_quota(container, NC):
+	client = docker.from_env()
+	cpu_period = 1000000
+	cpu_quota = int(cpu_period*NC)
+	for c in client.containers.list(filters={'ancestor':'giuliogarbi/teastore-'+container}):
+		print("X")
+		c.update(cpu_period=cpu_period, cpu_quota=cpu_quota)
 
-def run_case(Cli, WebuiCpu):
-	pass
+def run_case(Cli, WebuiCpu, mf):
+	change_cpu_quota("webui", WebuiCpu)
+	timeIn = time.time_ns()
+	allLines = Queue()
+	statsOut = Queue()
+	profiling = Value('i', 1)
+	isCliOk = Value('i', 0)
+	pMonitor = Process(target=monitorDocker, args=(profiling, 10.0, statsOut, timeIn/1000000000.0))
+	pMCli = Process(target=monitorCli, args=(isCliOk, allLines, statsOut))
+	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05)) for i in range(Cli)]
+	for p in pWload:
+		p.start()
+	pMCli.start()
+	pMonitor.start()
+	pMonitor.join()
+	pMCli.join()
+	for p in pWload:
+		p.join()
+	timeOut = time.time_ns()
+	finalStatsTxt = statsOut.get()+statsOut.get()
+	finalStats = MsStats.fromString(finalStatsTxt)
+	mf.addSample(finalStats, Cli, {'webui':WebuiCpu}, (timeOut-timeIn)/1000000000.0)
 
-def monitor(output, profilingSleepS):
+def monitorDocker(profiling, profilingSleepS, statsOut, ignoreBeforeS):
 	client = docker.from_env()
 	while True:
-		print("wait")
 		time.sleep(profilingSleepS)
 		log_consumer = MsLogConsumer(30)
 		webui_logs_txt = get_logs(client, 'webui')
-		webui_log = parseAccessLogValve('webui', webui_logs_txt)
+		webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
 		log_consumer.addMsLog(webui_log)
 		stats = log_consumer.computeStats()
-		stats.dump()
 		if stats.isAcceptable(30, 0.1):
-			print("quit")
-			#output.put("ans")
+			print("quit docker")
+			profiling.value = 0
+			statsOut.put(str(stats))
 			return
 
-def workload(profiling, allLines, sleepTimeS):
-	loglines = []
-	while profiling.value != 0:
+def monitorCli(isCliOk, allLines, statsOut):
+	ml = MsLog("Client")
+	while True:
+		log_consumer = MsLogConsumer(30)
+		lntxt = allLines.get()
+		logline = LogLine.fromString(lntxt)
+		ml.addLine(logline)
+		log_consumer.addMsLog(ml)
+		stats = log_consumer.computeStats()
+		if stats.isAcceptable(30, 0.1):
+			print("quit cli")
+			isCliOk.value = 1
+			statsOut.put(str(stats))
+			return
+
+def workload(profiling, isCliOk, allLines, sleepTimeS):
+	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
 		time.sleep(sleepTimeS)
 		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/") as response:
@@ -55,29 +94,14 @@ def workload(profiling, allLines, sleepTimeS):
 		exitTimeNs = time.time_ns()
 		exitTimeS = exitTimeNs/1000000000.0
 		rtS = (exitTimeNs-startTimeNs)/1000000000.0
-		loglines.append(LogLine("main", exitTimeS, rtS))
-	#allLines.put(loglines)
+		logline = str(LogLine("main", exitTimeS, rtS))
+		allLines.put(logline)
+	print("wlexit")
 
 if __name__ == '__main__':
-	Cli = 1
-	# TODO RM LOGS
-	allLines = Queue()
-	profiling = Value('i', 1)
-	isCliOk = Array('i', [0]*Cli)
-	pMonitor = Process(target=monitor, args=(None, 10.0))
-	pWload = [Process(target=workload, args=(profiling, allLines, 0.1)) for i in range(Cli)]
-	for p in pWload:
-		p.start()
-	pMonitor.start()
-	pMonitor.join()
-	profiling.value = 0
-	for p in pWload:
-		p.join()
-
-#client = docker.from_env()
-#webui_logs_txt = get_logs(client, 'webui')
-#webui_log = parseAccessLogValve('webui', webui_logs_txt)
-#
-#log_consumer = MsLogConsumer(30)
-#log_consumer.addMsLog(webui_log)
-#log_consumer.computeStats()
+	mf = Matfile()
+	for i in [1]+[k*2 for k in range(1,15)]:
+		print("Running case",i)
+		run_case(i, 1.0, mf)
+		mf.saveMat('../../data/teastore/out.mat')
+		time.sleep(5)

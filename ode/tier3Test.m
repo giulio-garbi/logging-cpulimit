@@ -1,6 +1,6 @@
 
 %rts_no_block = [0.6616057589136319 0.5070379325028123 0.39518621050078284 0.16030459260118418];
-rts_no_block = [0.802152784334289	0.643448130951988	0.502755534317758	0.203638892206881];
+rts_no_block = [0.0670	0.0105	0.0099	0.0098];
 st_no_block = [rts_no_block(1:3)-rts_no_block(2:4) rts_no_block(4)];
 
 MU=zeros(1,10);
@@ -11,8 +11,9 @@ NT=[inf,inf,inf,inf];
 %7.1429    4.5455    2.0000    2.7778 ODE rate
 %6.6729    4.4043    1.9732    2.7563 Real rate
 
-np=7;
+np=16;
 
+Cli = [1 2:2:30];
 RTp=zeros(np,4);
 Tp=zeros(np,4);
 %NC=zeros(np,2);
@@ -20,8 +21,8 @@ Tp=zeros(np,4);
 
 for i=1:np
 
-%Cli(i)=i*5;
-NC(i,:)=[inf,24];
+%Cli(i)=i*2;
+NC(i,:)=[inf,1.0];
 [t,y,Ts]=lqnOde([0,0,0,0,0,0,0,0,0,Cli(i)],MU,NT,NC(i,:));
 
 Tp(i,:)=Ts';

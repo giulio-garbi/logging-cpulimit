@@ -8,6 +8,7 @@ from urllib.request import urlopen
 import time
 from multiprocessing import *
 from matfile import *
+import os
 
 def get_logs(client, container):
 	logsTxt = []
@@ -104,8 +105,10 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 
 if __name__ == '__main__':
 	mf = Matfile()
-	for i in [1]+[2*k for k in range(1,15)]:
+	for i in [1]+[2*k for k in range(1,15)]+[10*k for k in range(3,8)]:
 		print("Running case",i)
 		run_case(i, 1.0, mf)
 		mf.saveMat('../../data/teastore/out.mat')
 		time.sleep(5)
+	print("end_of_tests")
+	os.exit()

@@ -41,7 +41,7 @@ def run_case(Cli, WebuiCpu, mf):
 	wlquit = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
-	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, 10.0, statsOut, timeIn/1000000000.0, wlquit))
+	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, 100.0, statsOut, timeIn/1000000000.0, wlquit))
 	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:
@@ -107,7 +107,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 
 if __name__ == '__main__':
 	mf = Matfile()
-	for i in [1]+[2*k for k in range(1,15)]+[10*k for k in range(3,8)]:
+	for i in [int(k) for k in sys.argv]:
 		print("Running case",i)
 		run_case(i, 1.0, mf)
 		mf.saveMat('../../data/teastore/out.mat')

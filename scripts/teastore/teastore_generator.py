@@ -41,7 +41,7 @@ def run_case(Cli, WebuiCpu, mf):
 	wlquit = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
-	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, 10.0, statsOut, timeIn/1000000000.0, wlquit))
+	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, 50.0, statsOut, timeIn/1000000000.0, wlquit))
 	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:

@@ -8,7 +8,7 @@ from urllib.request import urlopen
 import time
 from multiprocessing import *
 from matfile import *
-import os
+import sys
 
 def get_logs(client, container):
 	logsTxt = []
@@ -41,8 +41,8 @@ def run_case(Cli, WebuiCpu, mf):
 	wlquit = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
-	pMonitor = Process(target=monitorDocker, args=(profiling, 10.0, statsOut, timeIn/1000000000.0, wlquit))
-	pMCli = Process(target=monitorCli, args=(isCliOk, allLines, statsOut, wlquit))
+	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, 10.0, statsOut, timeIn/1000000000.0, wlquit))
+	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:
 		p.start()
@@ -51,43 +51,45 @@ def run_case(Cli, WebuiCpu, mf):
 	wlquit.get() #pMonitor.join()
 	wlquit.get() #pMCli.join()
 	for p in pWload:
-		wlquit.get()
+		wlquit.get() #p.join()
 	timeOut = time.time_ns()
 	finalStatsTxt = statsOut.get()+statsOut.get()
 	finalStats = MsStats.fromString(finalStatsTxt)
 	mf.addSample(finalStats, Cli, {'webui':WebuiCpu}, (timeOut-timeIn)/1000000000.0)
 
-def monitorDocker(profiling, profilingSleepS, statsOut, ignoreBeforeS, wlquit):
+def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, wlquit):
 	client = docker.from_env()
-	while True:
+	pOk = False
+	while profiling.value != 0 or isCliOk.value == 0:
 		time.sleep(profilingSleepS)
 		log_consumer = MsLogConsumer(30)
 		webui_logs_txt = get_logs(client, 'webui')
 		webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
 		log_consumer.addMsLog(webui_log)
 		stats = log_consumer.computeStats()
-		if stats.contains('webui-GET_/tools.descartes.teastore.webui/_HTTP/1.1') and stats.isAcceptable(30, 0.1):
-			print("quit docker")
+		if not pOk and stats.contains('webui-GET_/tools.descartes.teastore.webui/_HTTP/1.1') and stats.isAcceptable(30, 0.1):
+			print("docker satisfied")
 			profiling.value = 0
-			statsOut.put(str(stats))
-			wlquit.put("x")
-			return
+			pOk = True
+	statsOut.put(str(stats))
+	wlquit.put("x")
 
-def monitorCli(isCliOk, allLines, statsOut, wlquit):
+def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
 	ml = MsLog("Client")
-	while True:
+	clOk = False
+	while profiling.value != 0 or isCliOk.value == 0:
 		log_consumer = MsLogConsumer(30)
 		lntxt = allLines.get()
 		logline = LogLine.fromString(lntxt)
 		ml.addLine(logline)
 		log_consumer.addMsLog(ml)
 		stats = log_consumer.computeStats()
-		if stats.isAcceptable(30, 0.1):
-			print("quit cli")
+		if not clOk and stats.isAcceptable(30, 0.1):
+			print("cli satisfied")
+			clOk = True
 			isCliOk.value = 1
-			statsOut.put(str(stats))
-			wlquit.put("x")
-			return
+	statsOut.put(str(stats))
+	wlquit.put("x")
 
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 	while profiling.value != 0 or isCliOk.value == 0:
@@ -111,4 +113,4 @@ if __name__ == '__main__':
 		mf.saveMat('../../data/teastore/out.mat')
 		time.sleep(5)
 	print("end_of_tests")
-	os.exit()
+	sys.exit()

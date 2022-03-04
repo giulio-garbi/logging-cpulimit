@@ -15,4 +15,6 @@ def parseAccessLogValve(msName, logs, ignoreBeforeS):
 					endpoint = (mtc.group('req').replace(b" ",b"_")).decode('utf-8')
 					#print(exitTimeS, rtS, len(endpoint))
 					ml.addLine(LogLine(endpoint, exitTimeS, rtS))
+			else:
+				print("Invalid log line:", line)
 	return ml

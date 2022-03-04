@@ -53,7 +53,7 @@ def run_case(Cli, WebuiCpu, mf):
 	for p in pWload:
 		wlquit.get() #p.join()
 	timeOut = time.time_ns()
-	pMonitor.join()
+	'''pMonitor.join()
 	print("pMonitor joined")
 	pMCli.join()
 	print("pMCli joined")
@@ -61,7 +61,7 @@ def run_case(Cli, WebuiCpu, mf):
 	for p in pWload:
 		p.join()
 		print("pWload["+str(cnt)+"] joined")
-		cnt += 1
+		cnt += 1'''
 	finalStatsTxt = statsOut.get()+statsOut.get()
 	finalStats = MsStats.fromString(finalStatsTxt)
 	mf.addSample(finalStats, Cli, {'webui':WebuiCpu}, (timeOut-timeIn)/1000000000.0)
@@ -115,6 +115,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 	wlquit.put("x")
 
 if __name__ == '__main__':
+	multiprocessing.set_start_method("spawn")
 	mf = Matfile()
 	for i in [int(k) for k in sys.argv[1:]]:
 		print("Running case",i)

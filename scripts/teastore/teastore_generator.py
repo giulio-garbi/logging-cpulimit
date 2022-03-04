@@ -34,7 +34,7 @@ def change_cpu_quota(container, NC):
 		print("X")
 		c.update(cpu_period=cpu_period, cpu_quota=cpu_quota)
 
-def run_case(Cli, WebuiCpu, mf):
+def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	change_cpu_quota("webui", WebuiCpu)
 	timeIn = time.time_ns()
 	allLines = Queue()
@@ -42,7 +42,7 @@ def run_case(Cli, WebuiCpu, mf):
 	wlquit = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
-	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, 10.0, statsOut, timeIn/1000000000.0, wlquit))
+	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit))
 	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:
@@ -119,9 +119,11 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 if __name__ == '__main__':
 	set_start_method("spawn")
 	mf = Matfile()
-	for i in [int(k) for k in sys.argv[1:]]:
+	#for i in [int(k) for k in sys.argv[1:]]:
+	for monTime in [10.0, 20.0, 40.0, 80.0, 160.0, 320.0]:
+		i = 80
 		print("Running case",i)
-		run_case(i, 1.0, mf)
+		run_case(i, 1.0, mf, monTime)
 		mf.saveMat('../../data/teastore/out.mat')
 		time.sleep(5)
 	print("end_of_tests")

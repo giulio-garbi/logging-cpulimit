@@ -56,7 +56,7 @@ def run_case(Cli, WebuiCpu, mf):
 	finalStats = MsStats.fromString(finalStatsTxt)
 	mf.addSample(finalStats, Cli, {'webui':WebuiCpu}, (timeOut-timeIn)/1000000000.0)
 
-def monitorDocker(profiling, profilingSleepS, statsOut, ignoreBeforeS):
+def monitorDocker(profiling, profilingSleepS, statsOut, ignoreBeforeS, wlquit):
 	client = docker.from_env()
 	while True:
 		time.sleep(profilingSleepS)
@@ -72,7 +72,7 @@ def monitorDocker(profiling, profilingSleepS, statsOut, ignoreBeforeS):
 			wlquit.put("x")
 			return
 
-def monitorCli(isCliOk, allLines, statsOut):
+def monitorCli(isCliOk, allLines, statsOut, wlquit):
 	ml = MsLog("Client")
 	while True:
 		log_consumer = MsLogConsumer(30)

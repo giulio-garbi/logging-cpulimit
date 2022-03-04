@@ -6,7 +6,7 @@ def parseAccessLogValve(msName, logs, ignoreBeforeS):
 	ml = MsLog(msName)
 	for log in logs:
 		for line in log.splitlines():
-			mtc = re.search(br'end_ms:(?P<end_ms>\d+) rt_usec:(?P<rt_usec>\d+) req:"(?P<req>.+)"', line)
+			mtc = re.search(br'end_ms:(?P<end_ms>\d+) rt_usec:(?P<rt_usec>\d+) code:.+ req:"(?P<req>.+)"', line)
 			if mtc is not None:
 				exitTimeS = int(mtc.group('end_ms'))/1000.0
 				if exitTimeS > ignoreBeforeS:

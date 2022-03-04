@@ -115,7 +115,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 	wlquit.put("x")
 
 if __name__ == '__main__':
-	multiprocessing.set_start_method("spawn")
+	set_start_method("spawn")
 	mf = Matfile()
 	for i in [int(k) for k in sys.argv[1:]]:
 		print("Running case",i)

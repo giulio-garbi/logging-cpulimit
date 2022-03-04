@@ -27,7 +27,7 @@ def get_logs(client, container):
 
 def change_cpu_quota(container, NC):
 	client = docker.from_env()
-	cpu_period = 100000
+	cpu_period = 10000
 	cpu_quota = int(cpu_period*NC)
 	for c in client.containers.list(filters={'ancestor':'giuliogarbi/teastore-'+container}):
 		print("X")

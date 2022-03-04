@@ -37,6 +37,9 @@ class MsStats:
             self.rtBatchesNum[label] >= N and \
             self.thrMean[label] is not None for label in self.rtCI])
 
+    def contains(self, *labels):
+        return all(l in self.rtMean for l in labels)
+
     def dump(self):
         for label in self.rtCI:
             print(label," rt ",self.rtMean[label],' +/- ',abs(self.rtCI[label][0]-self.rtMean[label]))

@@ -64,7 +64,7 @@ def monitorDocker(profiling, profilingSleepS, statsOut, ignoreBeforeS):
 		webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
 		log_consumer.addMsLog(webui_log)
 		stats = log_consumer.computeStats()
-		if stats.isAcceptable(30, 0.1):
+		if stats.contains('webui-GET_/tools.descartes.teastore.webui/_HTTP/1.1') and stats.isAcceptable(30, 0.1):
 			print("quit docker")
 			profiling.value = 0
 			statsOut.put(str(stats))

@@ -40,15 +40,15 @@ def run_case(Cli, WebuiCpu, mf):
 	wlquit = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
-	pMonitor = Process(target=monitorDocker, args=(profiling, 10.0, statsOut, timeIn/1000000000.0))
-	pMCli = Process(target=monitorCli, args=(isCliOk, allLines, statsOut))
+	pMonitor = Process(target=monitorDocker, args=(profiling, 10.0, statsOut, timeIn/1000000000.0, wlquit))
+	pMCli = Process(target=monitorCli, args=(isCliOk, allLines, statsOut, wlquit))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:
 		p.start()
 	pMCli.start()
 	pMonitor.start()
-	pMonitor.join()
-	pMCli.join()
+	wlquit.get() #pMonitor.join()
+	wlquit.get() #pMCli.join()
 	for p in pWload:
 		wlquit.get()
 	timeOut = time.time_ns()
@@ -69,6 +69,7 @@ def monitorDocker(profiling, profilingSleepS, statsOut, ignoreBeforeS):
 			print("quit docker")
 			profiling.value = 0
 			statsOut.put(str(stats))
+			wlquit.put("x")
 			return
 
 def monitorCli(isCliOk, allLines, statsOut):
@@ -84,6 +85,7 @@ def monitorCli(isCliOk, allLines, statsOut):
 			print("quit cli")
 			isCliOk.value = 1
 			statsOut.put(str(stats))
+			wlquit.put("x")
 			return
 
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):

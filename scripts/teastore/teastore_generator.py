@@ -9,6 +9,7 @@ import time
 from multiprocessing import *
 from matfile import *
 import sys
+from numpy import random
 
 def get_logs(client, container):
 	logsTxt = []
@@ -41,7 +42,7 @@ def run_case(Cli, WebuiCpu, mf):
 	wlquit = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
-	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, 50.0, statsOut, timeIn/1000000000.0, wlquit))
+	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, 10.0, statsOut, timeIn/1000000000.0, wlquit))
 	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:
@@ -103,7 +104,8 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
-		time.sleep(sleepTimeS)
+		slTime = sleepTimeS*random.exponential(scale=1)
+		time.sleep(slTime)
 		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/") as response:
 			response_content = response.read()
 		exitTimeNs = time.time_ns()

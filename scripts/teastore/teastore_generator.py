@@ -53,6 +53,15 @@ def run_case(Cli, WebuiCpu, mf):
 	for p in pWload:
 		wlquit.get() #p.join()
 	timeOut = time.time_ns()
+	pMonitor.join()
+	print("pMonitor joined")
+	pMCli.join()
+	print("pMCli joined")
+	cnt = 0
+	for p in pWload:
+		p.join()
+		print("pWload["+str(cnt)+"] joined")
+		cnt += 1
 	finalStatsTxt = statsOut.get()+statsOut.get()
 	finalStats = MsStats.fromString(finalStatsTxt)
 	mf.addSample(finalStats, Cli, {'webui':WebuiCpu}, (timeOut-timeIn)/1000000000.0)

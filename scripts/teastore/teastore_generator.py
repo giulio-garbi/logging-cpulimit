@@ -107,7 +107,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 
 if __name__ == '__main__':
 	mf = Matfile()
-	for i in [int(k) for k in sys.argv]:
+	for i in [int(k) for k in sys.argv[1:]]:
 		print("Running case",i)
 		run_case(i, 1.0, mf)
 		mf.saveMat('../../data/teastore/out.mat')

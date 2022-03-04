@@ -37,11 +37,12 @@ def run_case(Cli, WebuiCpu, mf):
 	timeIn = time.time_ns()
 	allLines = Queue()
 	statsOut = Queue()
+	wlquit = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
 	pMonitor = Process(target=monitorDocker, args=(profiling, 10.0, statsOut, timeIn/1000000000.0))
 	pMCli = Process(target=monitorCli, args=(isCliOk, allLines, statsOut))
-	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05)) for i in range(Cli)]
+	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:
 		p.start()
 	pMCli.start()
@@ -49,7 +50,7 @@ def run_case(Cli, WebuiCpu, mf):
 	pMonitor.join()
 	pMCli.join()
 	for p in pWload:
-		p.join()
+		wlquit.get()
 	timeOut = time.time_ns()
 	finalStatsTxt = statsOut.get()+statsOut.get()
 	finalStats = MsStats.fromString(finalStatsTxt)
@@ -85,7 +86,7 @@ def monitorCli(isCliOk, allLines, statsOut):
 			statsOut.put(str(stats))
 			return
 
-def workload(profiling, isCliOk, allLines, sleepTimeS):
+def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
 		time.sleep(sleepTimeS)
@@ -97,6 +98,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS):
 		logline = str(LogLine("main", exitTimeS, rtS))
 		allLines.put(logline)
 	print("wlexit")
+	wlquit.put("x")
 
 if __name__ == '__main__':
 	mf = Matfile()

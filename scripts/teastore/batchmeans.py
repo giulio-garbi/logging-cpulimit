@@ -31,6 +31,7 @@ class MsStats:
         self.rtMean = dict()
         self.rtBatchesNum = dict()
         self.thrMean = dict()
+        self.nrSamples = dict()
 
     def isAcceptable(self, N, rtAbsError):
         return all([abs(self.rtCI[label][0]-self.rtMean[label]) <= rtAbsError and \
@@ -55,6 +56,8 @@ class MsStats:
             ans+="rtBatchesNum "+str(bn)+" "+label+"\n"
         for (label,t) in self.thrMean.items():
             ans+="thrMean "+str(t)+" "+label+"\n"
+        for (label,t) in self.nrSamples.items():
+            ans+="nrSamples "+str(t)+" "+label+"\n"
         return ans
 
     @staticmethod
@@ -71,6 +74,8 @@ class MsStats:
                     ans.rtBatchesNum[parts[2]] = int(parts[1])
                 elif parts[0] == "thrMean":
                     ans.thrMean[parts[2]] = float(parts[1])
+                elif parts[0] == "nrSamples":
+                    ans.nrSamples[parts[2]] = float(parts[1])
         return ans
     
 
@@ -145,6 +150,7 @@ class MsLogConsumer:
             stats.rtCI[label] = CI
             stats.rtMean[label] = np.mean(rtMeans[1:])
             stats.rtBatchesNum[label] = self.rtSamples[epIdx]//self.K
+            stats.nrSamples[label] = self.rtSamples[epIdx]
             if self.dtExitSums[epIdx] > 0:
                 #print(label, self.dtExitSamples[epIdx], self.dtExitSums[epIdx])
                 stats.thrMean[label] = self.dtExitSamples[epIdx]/self.dtExitSums[epIdx]

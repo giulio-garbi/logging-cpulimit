@@ -48,6 +48,9 @@ class Matfile:
 		TmL = [[stats.thrMean[e] for e in entryNamesL] for stats in self.statsList]
 		Tm = np.array(TmL, dtype="float")
 
+		NsL = [[stats.nrSamples[e] for e in entryNamesL] for stats in self.statsList]
+		Ns = np.array(NsL, dtype="float")
+
 		outdata['taskNames'] = taskNames
 		outdata['entryNames'] = entryNames
 		outdata['Cli'] = Cli
@@ -55,5 +58,6 @@ class Matfile:
 		outdata['RTm'] = RTm
 		outdata['Tm'] = Tm
 		outdata['profTime'] = profTime
+		outdata['Ns'] = Ns
 
 		savemat(fname, outdata)

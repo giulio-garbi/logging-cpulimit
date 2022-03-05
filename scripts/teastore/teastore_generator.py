@@ -56,14 +56,14 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	timeOut = time.time_ns()
 	finalStatsTxt = statsOut.get()+statsOut.get()
 	finalStats = MsStats.fromString(finalStatsTxt)
-	pMonitor.join()
-	print("pMonitor joined")
-	pMCli.join()
-	print("pMCli joined")
+	pMonitor.kill()
+	print("pMonitor terminated")
+	pMCli.kill()
+	print("pMCli terminated")
 	cnt = 0
 	for p in pWload:
-		p.join()
-		print("pWload["+str(cnt)+"] joined")
+		p.kill()
+		print("pWload["+str(cnt)+"] terminated")
 		cnt += 1
 	mf.addSample(finalStats, Cli, {'webui':WebuiCpu}, (timeOut-timeIn)/1000000000.0)
 

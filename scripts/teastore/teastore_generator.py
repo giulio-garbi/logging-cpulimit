@@ -87,7 +87,7 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
 	ml = MsLog("Client")
 	clOk = False
-	while profiling.value != 0 or isCliOk.value == 0:
+	while profiling.value != 0 or isCliOk.value == 0 or not allLines.empty():
 		log_consumer = MsLogConsumer(30)
 		lntxt = allLines.get()
 		logline = LogLine.fromString(lntxt)

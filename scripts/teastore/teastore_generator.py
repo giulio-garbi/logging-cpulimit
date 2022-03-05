@@ -111,18 +111,20 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
 	wlquit.put("x")
 
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
+	rqCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
 		slTime = sleepTimeS*random.exponential(scale=1)
 		time.sleep(slTime)
 		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/", timeout=9999999) as response:
 			response_content = response.read()
+		rqCnt+=1
 		exitTimeNs = time.time_ns()
 		exitTimeS = exitTimeNs/1000000000.0
 		rtS = (exitTimeNs-startTimeNs)/1000000000.0
 		logline = str(LogLine("main", exitTimeS, rtS))
 		allLines.put(logline)
-	print("wlexit")
+	print("wlexit", rqCnt)
 	wlquit.put("x")
 
 if __name__ == '__main__':

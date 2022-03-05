@@ -45,7 +45,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	isCliOk = Value('i', 0)
 	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit, lastDockerScan))
 	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit, Cli, lastDockerScan))
-	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit, timeIn+i)) for i in range(Cli)]
+	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit, timeIn+i, i)) for i in range(Cli)]
 	for p in pWload:
 		p.start()
 	pMCli.start()
@@ -73,7 +73,7 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 	pOk = False
 	while profiling.value != 0 or isCliOk.value == 0:
 		time.sleep(profilingSleepS)
-		log_consumer = MsLogConsumer(30)
+		log_consumer = MsLogConsumer(30, 0.1)
 		webui_logs_txt = get_logs(client, 'webui')
 		webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
 		log_consumer.addMsLog(webui_log)
@@ -84,7 +84,7 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 			pOk = True
 
 	lastDockerScan.get()
-	log_consumer = MsLogConsumer(30)
+	log_consumer = MsLogConsumer(30, 0.1)
 	webui_logs_txt = get_logs(client, 'webui')
 	webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
 	log_consumer.addMsLog(webui_log)
@@ -98,7 +98,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 	lnCnt = 0
 	workersEnded = 0
 	while (profiling.value != 0 or isCliOk.value == 0) and workersEnded < nWorkers:
-		log_consumer = MsLogConsumer(30)
+		log_consumer = MsLogConsumer(30, 0.1)
 		lntxt = allLines.get()
 		if lntxt == "stop":
 			workersEnded += 1
@@ -122,7 +122,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 			ml.addLine(logline)
 			lnCnt+=1
 
-	last_log_consumer = MsLogConsumer(30)
+	last_log_consumer = MsLogConsumer(30, 0.1)
 	last_log_consumer.addMsLog(ml)
 	stats = last_log_consumer.computeStats()
 	statsOut.put(str(stats))
@@ -130,7 +130,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 	lastDockerScan.put("x")
 	wlquit.put("x")
 
-def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed):
+def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, z):
 	rnd = random.default_rng(seed)
 	rqCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
@@ -144,7 +144,8 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed):
 		exitTimeS = exitTimeNs/1000000000.0
 		rtS = (exitTimeNs-startTimeNs)/1000000000.0
 		logline = str(LogLine("main", exitTimeS, rtS))
-		allLines.put(logline)
+		if z==0:
+			allLines.put(logline)
 	allLines.put("stop")
 	print("wlexit", rqCnt)
 	wlquit.put("x")
@@ -153,7 +154,7 @@ if __name__ == '__main__':
 	set_start_method("spawn")
 	mf = Matfile()
 	for i in [int(k) for k in sys.argv[1:]]:
-		monTime = 320.0
+		monTime = 10.0
 		print("Running case",i)
 		run_case(i, 1.0, mf, monTime)
 		mf.saveMat('../../data/teastore/out.mat')

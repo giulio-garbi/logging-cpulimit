@@ -31,6 +31,8 @@ class MsStats:
         self.rtMean = dict()
         self.rtBatchesNum = dict()
         self.thrMean = dict()
+        self.thrBatchesNum = dict()
+        self.thrCI = dict()
         self.nrSamples = dict()
 
     def isAcceptable(self, N, rtAbsError):
@@ -56,6 +58,10 @@ class MsStats:
             ans+="rtBatchesNum "+str(bn)+" "+label+"\n"
         for (label,t) in self.thrMean.items():
             ans+="thrMean "+str(t)+" "+label+"\n"
+        for (label,ci) in self.thrCI.items():
+            ans+="thrCI "+str(ci[0])+" "+str(ci[1])+" "+label+"\n"
+        for (label,bn) in self.thrBatchesNum.items():
+            ans+="thrBatchesNum "+str(bn)+" "+label+"\n"
         for (label,t) in self.nrSamples.items():
             ans+="nrSamples "+str(t)+" "+label+"\n"
         return ans
@@ -76,11 +82,15 @@ class MsStats:
                     ans.thrMean[parts[2]] = float(parts[1])
                 elif parts[0] == "nrSamples":
                     ans.nrSamples[parts[2]] = float(parts[1])
+                elif parts[0] == "thrCI":
+                    ans.thrCI[parts[3]] = (float(parts[1]),float(parts[2]))
+                elif parts[0] == "thrBatchesNum":
+                    ans.thrBatchesNum[parts[2]] = int(parts[1])
         return ans
     
 
 class MsLogConsumer:
-    def __init__(self, K):
+    def __init__(self, K, thrWindowS):
         #size of batches
         self.K = K
 
@@ -92,10 +102,18 @@ class MsLogConsumer:
         #response time counters
         self.rtSamples = []
 
+        #throughput batches
+        self.thrBatches = []
+        #throughput counters
+        self.thrSamples = []
+        #throughput window size
+        self.thrWindowS = thrWindowS
+
+        '''
         #time between exits sums
         self.dtExitSums = []
         #time between exits counters
-        self.dtExitSamples = []
+        self.dtExitSamples = []'''
 
     def addMsLog(self, mslog):
         for ep in mslog.lines:
@@ -106,6 +124,8 @@ class MsLogConsumer:
 
                 self.rtBatches.append([])
                 self.rtSamples.append(0)
+                self.thrBatches.append([])
+                self.thrSamples.append(0)
                 self.dtExitSums.append(0.0)
                 self.dtExitSamples.append(0)
             else:
@@ -129,12 +149,40 @@ class MsLogConsumer:
             # count the new samples
             self.rtSamples[epIdx] += len(rtS)
 
+            '''
             # processing the new time between exits. No batch means needed here, just the average
             exitS = [ll.exitTimeS for ll in log]
             exitS.sort()
             if len(exitS) > 1:
                 self.dtExitSums[epIdx] += exitS[-1]-exitS[0]
-                self.dtExitSamples[epIdx] += len(exitS)-1
+                self.dtExitSamples[epIdx] += len(exitS)-1'''
+
+
+            #batch means also for throughput
+            exitS = [ll.exitTimeS for ll in log]
+            exitS.sort()
+            # We compute the throughput over small windows (size self.thrWindowS), as the number of completed requests in the timeframe
+            nWindows = (exitS[-1]-exitS[0])//self.thrWindowS
+            completionsInWindow = [0]*(nWindows+1)
+            for e in exitS:
+                completionsInWindow[(e.exitTimeS-exitS[0])//self.thrWindowS] += 1
+            # last window is incomplete: it will be discarded
+            del completionsInWindow[-1]
+            thrS = [ciw*1.0/self.thrWindowS for ciw in completionsInWindow]
+            # adding the throughputs into the batches, ensuring that each batch is long at most K
+            startFrom = 0
+
+            if self.thrSamples[epIdx]%self.K > 0: # if some batch is not full
+                toAdd = self.K-(self.thrSamples[epIdx]%self.K)
+                self.thrBatches[epIdx][-1] += thrS[startFrom:startFrom+toAdd]
+                startFrom = startFrom+toAdd
+
+            # add new batches as needed (last one might not be full)
+            for i in range(startFrom, len(thrS), self.K):
+                self.thrBatches[epIdx].append(thrS[i:i+self.K])
+
+            # count the new samples
+            self.thrSamples[epIdx] += len(thrS)
 
     def computeStats(self):
         stats = MsStats()
@@ -151,9 +199,19 @@ class MsLogConsumer:
             stats.rtMean[label] = np.mean(rtMeans[1:])
             stats.rtBatchesNum[label] = self.rtSamples[epIdx]//self.K
             stats.nrSamples[label] = self.rtSamples[epIdx]
-            if self.dtExitSums[epIdx] > 0:
+            '''if self.dtExitSums[epIdx] > 0:
                 #print(label, self.dtExitSamples[epIdx], self.dtExitSums[epIdx])
                 stats.thrMean[label] = self.dtExitSamples[epIdx]/self.dtExitSums[epIdx]
             else:
-                stats.thrMean[label] = None
+                stats.thrMean[label] = None'''
+            if self.thrSamples[epIdx] < 3*self.K:
+                thrMeans = np.array([float('NaN'), float('NaN')])
+                CI = (float('NaN'), float('NaN'))
+            else:
+                thrarr = np.array(self.thrBatches[epIdx][0:self.thrSamples[epIdx]//self.K])
+                thrMeans = np.mean(thrarr, axis=1)
+                CI = st.t.interval(0.99, len(thrMeans[1:]) - 1, loc=np.mean(thrMeans[1:]), scale=st.sem(thrMeans[1:]))
+            stats.thrCI[label] = CI
+            stats.thrMean[label] = np.mean(thrMeans[1:])
+            stats.thrBatchesNum[label] = self.thrSamples[epIdx]//self.K
         return stats

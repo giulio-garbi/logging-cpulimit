@@ -45,7 +45,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	isCliOk = Value('i', 0)
 	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit, lastDockerScan))
 	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit, Cli, lastDockerScan))
-	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
+	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit, timeIn+i)) for i in range(Cli)]
 	for p in pWload:
 		p.start()
 	pMCli.start()
@@ -130,11 +130,12 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 	lastDockerScan.put("x")
 	wlquit.put("x")
 
-def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
+def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed):
+	rnd = random.Random(seed)
 	rqCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
-		slTime = sleepTimeS*random.exponential(scale=1)
+		slTime = sleepTimeS*rnd.exponential(scale=1)
 		time.sleep(slTime)
 		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/", timeout=9999999) as response:
 			response_content = response.read()

@@ -43,7 +43,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
 	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit))
-	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit))
+	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit, Cli))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:
 		p.start()
@@ -84,28 +84,35 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 	statsOut.put(str(stats))
 	wlquit.put("x")
 
-def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
+def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers):
 	ml = MsLog("Client")
 	clOk = False
 	lnCnt = 0
-	while profiling.value != 0 or isCliOk.value == 0:
+	workersEnded = 0
+	while (profiling.value != 0 or isCliOk.value == 0) and workersEnded < nWorkers:
 		log_consumer = MsLogConsumer(30)
 		lntxt = allLines.get()
-		logline = LogLine.fromString(lntxt)
-		ml.addLine(logline)
-		lnCnt+=1
-		log_consumer.addMsLog(ml)
-		stats = log_consumer.computeStats()
-		if not clOk and stats.isAcceptable(30, 0.1):
-			print("cli satisfied")
-			clOk = True
-			isCliOk.value = 1
+		if lntxt == "stop":
+			workersEnded += 1
+		else:
+			logline = LogLine.fromString(lntxt)
+			ml.addLine(logline)
+			lnCnt+=1
+			log_consumer.addMsLog(ml)
+			stats = log_consumer.computeStats()
+			if not clOk and stats.isAcceptable(30, 0.1):
+				print("cli satisfied")
+				clOk = True
+				isCliOk.value = 1
 
-	while not allLines.empty():
+	while workersEnded < nWorkers:
 		lntxt = allLines.get()
-		logline = LogLine.fromString(lntxt)
-		ml.addLine(logline)
-		lnCnt+=1
+		if lntxt == "stop":
+			workersEnded += 1
+		else:
+			logline = LogLine.fromString(lntxt)
+			ml.addLine(logline)
+			lnCnt+=1
 
 	last_log_consumer = MsLogConsumer(30)
 	last_log_consumer.addMsLog(ml)
@@ -128,6 +135,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 		rtS = (exitTimeNs-startTimeNs)/1000000000.0
 		logline = str(LogLine("main", exitTimeS, rtS))
 		allLines.put(logline)
+	allLines.put("stop")
 	print("wlexit", rqCnt)
 	wlquit.put("x")
 

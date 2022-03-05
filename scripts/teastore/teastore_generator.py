@@ -131,7 +131,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 	wlquit.put("x")
 
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed):
-	rnd = random.Random(seed)
+	rnd = random.default_rng(seed)
 	rqCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()

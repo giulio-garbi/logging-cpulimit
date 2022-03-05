@@ -36,6 +36,8 @@ class MsStats:
         self.nrSamples = dict()
 
     def isAcceptable(self, N, rtAbsError, thrAbsError):
+        for label in self.rtCI:
+            print(label,self.thrMean[label],abs(self.thrCI[label][0]-self.thrMean[label]))
         return all([abs(self.rtCI[label][0]-self.rtMean[label]) <= rtAbsError and \
             self.rtBatchesNum[label] >= N and \
             abs(self.thrCI[label][0]-self.thrMean[label]) <= thrAbsError for label in self.rtCI])

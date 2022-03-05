@@ -87,11 +87,13 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
 	ml = MsLog("Client")
 	clOk = False
+	lnCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
 		log_consumer = MsLogConsumer(30)
 		lntxt = allLines.get()
 		logline = LogLine.fromString(lntxt)
 		ml.addLine(logline)
+		lnCnt+=1
 		log_consumer.addMsLog(ml)
 		stats = log_consumer.computeStats()
 		if not clOk and stats.isAcceptable(30, 0.1):
@@ -103,11 +105,13 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
 		lntxt = allLines.get()
 		logline = LogLine.fromString(lntxt)
 		ml.addLine(logline)
+		lnCnt+=1
 
 	last_log_consumer = MsLogConsumer(30)
 	last_log_consumer.addMsLog(ml)
 	stats = last_log_consumer.computeStats()
 	statsOut.put(str(stats))
+	print("cli processing ended", lnCnt)
 	wlquit.put("x")
 
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):

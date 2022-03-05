@@ -35,10 +35,11 @@ class MsStats:
         self.thrCI = dict()
         self.nrSamples = dict()
 
-    def isAcceptable(self, N, rtAbsError):
+    def isAcceptable(self, N, rtAbsError, thrAbsError):
         return all([abs(self.rtCI[label][0]-self.rtMean[label]) <= rtAbsError and \
             self.rtBatchesNum[label] >= N and \
-            self.thrMean[label] is not None for label in self.rtCI])
+            abs(self.rtCI[label][0]-self.thrMean[label]) <= thrAbsError for label in self.rtCI])
+            #self.thrMean[label] is not None for label in self.rtCI])
 
     def contains(self, *labels):
         return all(l in self.rtMean for l in labels)

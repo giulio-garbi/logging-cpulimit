@@ -78,7 +78,7 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 		webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
 		log_consumer.addMsLog(webui_log)
 		stats = log_consumer.computeStats()
-		if not pOk and stats.contains('webui-GET_/tools.descartes.teastore.webui/_HTTP/1.1') and stats.isAcceptable(30, 0.1):
+		if not pOk and stats.contains('webui-GET_/tools.descartes.teastore.webui/_HTTP/1.1') and stats.isAcceptable(30, 0.1, 0.1):
 			print("docker satisfied")
 			profiling.value = 0
 			pOk = True
@@ -108,7 +108,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 			lnCnt+=1
 			log_consumer.addMsLog(ml)
 			stats = log_consumer.computeStats()
-			if not clOk and stats.isAcceptable(30, 0.1):
+			if not clOk and stats.isAcceptable(30, 0.1, 0.1):
 				print("cli satisfied")
 				clOk = True
 				isCliOk.value = 1

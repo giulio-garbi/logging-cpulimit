@@ -106,7 +106,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):
 		startTimeNs = time.time_ns()
 		slTime = sleepTimeS*random.exponential(scale=1)
 		time.sleep(slTime)
-		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/") as response:
+		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/", timeout=9999999) as response:
 			response_content = response.read()
 		exitTimeNs = time.time_ns()
 		exitTimeS = exitTimeNs/1000000000.0

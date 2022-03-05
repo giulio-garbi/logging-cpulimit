@@ -54,7 +54,9 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	for p in pWload:
 		wlquit.get() #p.join()
 	timeOut = time.time_ns()
-	'''pMonitor.join()
+	finalStatsTxt = statsOut.get()+statsOut.get()
+	finalStats = MsStats.fromString(finalStatsTxt)
+	pMonitor.join()
 	print("pMonitor joined")
 	pMCli.join()
 	print("pMCli joined")
@@ -62,9 +64,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	for p in pWload:
 		p.join()
 		print("pWload["+str(cnt)+"] joined")
-		cnt += 1'''
-	finalStatsTxt = statsOut.get()+statsOut.get()
-	finalStats = MsStats.fromString(finalStatsTxt)
+		cnt += 1
 	mf.addSample(finalStats, Cli, {'webui':WebuiCpu}, (timeOut-timeIn)/1000000000.0)
 
 def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, wlquit):

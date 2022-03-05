@@ -163,7 +163,7 @@ class MsLogConsumer:
             exitS.sort()
             # We compute the throughput over small windows (size self.thrWindowS), as the number of completed requests in the timeframe
             nWindows = (exitS[-1]-exitS[0])//self.thrWindowS
-            completionsInWindow = [0]*(nWindows+1)
+            completionsInWindow = [0]*int(nWindows+1)
             for e in exitS:
                 completionsInWindow[(e.exitTimeS-exitS[0])//self.thrWindowS] += 1
             # last window is incomplete: it will be discarded

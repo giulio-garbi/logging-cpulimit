@@ -87,7 +87,7 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
 	ml = MsLog("Client")
 	clOk = False
-	while profiling.value != 0 or isCliOk.value == 0 or not allLines.empty():
+	while profiling.value != 0 or isCliOk.value == 0:
 		log_consumer = MsLogConsumer(30)
 		lntxt = allLines.get()
 		logline = LogLine.fromString(lntxt)
@@ -98,6 +98,15 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit):
 			print("cli satisfied")
 			clOk = True
 			isCliOk.value = 1
+
+	while not allLines.empty():
+		lntxt = allLines.get()
+		logline = LogLine.fromString(lntxt)
+		ml.addLine(logline)
+
+	last_log_consumer = MsLogConsumer(30)
+	last_log_consumer.addMsLog(ml)
+	stats = last_log_consumer.computeStats()
 	statsOut.put(str(stats))
 	wlquit.put("x")
 

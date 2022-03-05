@@ -126,8 +126,8 @@ class MsLogConsumer:
                 self.rtSamples.append(0)
                 self.thrBatches.append([])
                 self.thrSamples.append(0)
-                self.dtExitSums.append(0.0)
-                self.dtExitSamples.append(0)
+                #self.dtExitSums.append(0.0)
+                #self.dtExitSamples.append(0)
             else:
                 epIdx = self.epIdxs[label]
 

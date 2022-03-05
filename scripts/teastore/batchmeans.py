@@ -165,7 +165,7 @@ class MsLogConsumer:
             nWindows = (exitS[-1]-exitS[0])//self.thrWindowS
             completionsInWindow = [0]*int(nWindows+1)
             for e in exitS:
-                completionsInWindow[(e-exitS[0])//self.thrWindowS] += 1
+                completionsInWindow[int((e-exitS[0])//self.thrWindowS)] += 1
             # last window is incomplete: it will be discarded
             del completionsInWindow[-1]
             thrS = [ciw*1.0/self.thrWindowS for ciw in completionsInWindow]

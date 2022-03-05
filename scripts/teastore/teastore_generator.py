@@ -40,10 +40,11 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	allLines = Queue()
 	statsOut = Queue()
 	wlquit = Queue()
+	lastDockerScan = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
-	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit))
-	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit, Cli))
+	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit, lastDockerScan))
+	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit, Cli, lastDockerScan))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit)) for i in range(Cli)]
 	for p in pWload:
 		p.start()
@@ -67,7 +68,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 		cnt += 1
 	mf.addSample(finalStats, Cli, {'webui':WebuiCpu}, (timeOut-timeIn)/1000000000.0)
 
-def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, wlquit):
+def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, wlquit, lastDockerScan):
 	client = docker.from_env()
 	pOk = False
 	while profiling.value != 0 or isCliOk.value == 0:
@@ -81,10 +82,17 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 			print("docker satisfied")
 			profiling.value = 0
 			pOk = True
+
+	lastDockerScan.get()
+	log_consumer = MsLogConsumer(30)
+	webui_logs_txt = get_logs(client, 'webui')
+	webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
+	log_consumer.addMsLog(webui_log)
+	stats = log_consumer.computeStats()
 	statsOut.put(str(stats))
 	wlquit.put("x")
 
-def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers):
+def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDockerScan):
 	ml = MsLog("Client")
 	clOk = False
 	lnCnt = 0
@@ -119,6 +127,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers):
 	stats = last_log_consumer.computeStats()
 	statsOut.put(str(stats))
 	print("cli processing ended", lnCnt)
+	lastDockerScan.put("x")
 	wlquit.put("x")
 
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit):

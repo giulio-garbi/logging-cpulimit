@@ -38,7 +38,7 @@ class MsStats:
     def isAcceptable(self, N, rtAbsError, thrAbsError):
         return all([abs(self.rtCI[label][0]-self.rtMean[label]) <= rtAbsError and \
             self.rtBatchesNum[label] >= N and \
-            abs(self.rtCI[label][0]-self.thrMean[label]) <= thrAbsError for label in self.rtCI])
+            abs(self.thrCI[label][0]-self.thrMean[label]) <= thrAbsError for label in self.rtCI])
             #self.thrMean[label] is not None for label in self.rtCI])
 
     def contains(self, *labels):

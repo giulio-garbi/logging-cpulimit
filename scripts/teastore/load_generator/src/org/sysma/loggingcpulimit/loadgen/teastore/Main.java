@@ -20,6 +20,7 @@ public class Main {
 		Workload[] wloads = new Workload[nCli];
 		for(int i=0; i<nCli; i++)
 			wloads[i] = new Workload(logger.output, thinkS, reqAddr);
+		wloads[0].print = true;
 		
 		Thread tL = new Thread(logger);
 		tL.start();

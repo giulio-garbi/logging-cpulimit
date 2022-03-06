@@ -15,6 +15,7 @@ public class Workload implements Runnable{
 	private final double thinkS;
 	private final LinkedBlockingQueue<String> output;
 	private final String reqAddr;
+	public boolean print = false;
 	
 	public Workload(LinkedBlockingQueue<String> output, double thinkS, String reqAddr) {
 		this.thinkS = thinkS;
@@ -25,11 +26,10 @@ public class Workload implements Runnable{
 	@Override
 	public void run() {
 		Duration sumCycles = Duration.ZERO;
+		Duration sumReq = Duration.ZERO;
 		int nCycles = 0;
-		Instant firstStart = null;
 		try {
 			HttpClient client = HttpClient.newHttpClient();
-			firstStart = Instant.now();
 			while(!Thread.interrupted()) {
 				Instant start = Instant.now();
 				Thread.sleep((int)(thinkS*1000));
@@ -37,7 +37,10 @@ public class Workload implements Runnable{
 				         .uri(URI.create(reqAddr))
 				         .build();
 				try {
+					Instant startReq = Instant.now();
 					client.send(request, BodyHandlers.ofString());
+					Instant stopReq = Instant.now();
+					sumReq = sumReq.plus(Duration.between(startReq, stopReq));
 				} catch (IOException e) {
 					e.printStackTrace();
 				} 
@@ -45,11 +48,10 @@ public class Workload implements Runnable{
 				nCycles++;
 				sumCycles = sumCycles.plus(Duration.between(start, end));
 				//record(start, end);
+				if(print && nCycles%1000==0)
+					System.out.println("cycle "+sumCycles.dividedBy(nCycles).toMillis() + " req " + sumReq.dividedBy(nCycles).toMillis());
 			}
 		} catch (InterruptedException e) {}
-		Instant lastStop = Instant.now();
-		System.out.println("global "+Duration.between(firstStart, lastStop).dividedBy(nCycles).toMillis());
-		System.out.println("parts "+sumCycles.dividedBy(nCycles).toMillis());
 		stop();
 	}
 	

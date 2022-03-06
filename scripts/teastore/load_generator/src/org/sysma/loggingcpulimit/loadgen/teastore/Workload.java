@@ -25,11 +25,11 @@ public class Workload implements Runnable{
 
 	@Override
 	public void run() {
-		Duration sumCycles = Duration.ZERO;
 		Duration sumReq = Duration.ZERO;
 		int nCycles = 0;
 		try {
 			HttpClient client = HttpClient.newHttpClient();
+			Instant firstStart = Instant.now();
 			while(!Thread.interrupted()) {
 				Instant start = Instant.now();
 				Thread.sleep((int)(thinkS*1000));
@@ -46,10 +46,9 @@ public class Workload implements Runnable{
 				} 
 				Instant end = Instant.now();
 				nCycles++;
-				sumCycles = sumCycles.plus(Duration.between(start, end));
 				//record(start, end);
 				if(print && nCycles%100==0)
-					System.out.println("cycle "+sumCycles.dividedBy(nCycles).toMillis() + " req " + sumReq.dividedBy(nCycles).toMillis());
+					System.out.println("cycle "+Duration.between(firstStart, Instant.now()).dividedBy(nCycles).toMillis() + " req " + sumReq.dividedBy(nCycles).toMillis());
 			}
 		} catch (InterruptedException e) {}
 		stop();

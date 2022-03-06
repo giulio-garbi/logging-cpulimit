@@ -48,7 +48,7 @@ public class Workload implements Runnable{
 				nCycles++;
 				sumCycles = sumCycles.plus(Duration.between(start, end));
 				//record(start, end);
-				if(print && nCycles%1000==0)
+				if(print && nCycles%100==0)
 					System.out.println("cycle "+sumCycles.dividedBy(nCycles).toMillis() + " req " + sumReq.dividedBy(nCycles).toMillis());
 			}
 		} catch (InterruptedException e) {}

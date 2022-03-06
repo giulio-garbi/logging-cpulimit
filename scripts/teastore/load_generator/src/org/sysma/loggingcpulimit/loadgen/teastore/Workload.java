@@ -1,6 +1,8 @@
 package org.sysma.loggingcpulimit.loadgen.teastore;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -22,8 +24,12 @@ public class Workload implements Runnable{
 
 	@Override
 	public void run() {
+		Duration sumCycles = Duration.ZERO;
+		int nCycles = 0;
+		Instant firstStart = null;
 		try {
 			HttpClient client = HttpClient.newHttpClient();
+			firstStart = Instant.now();
 			while(!Thread.interrupted()) {
 				Instant start = Instant.now();
 				Thread.sleep((int)(thinkS*1000));
@@ -36,9 +42,14 @@ public class Workload implements Runnable{
 					e.printStackTrace();
 				} 
 				Instant end = Instant.now();
-				record(start, end);
+				nCycles++;
+				sumCycles = sumCycles.plus(Duration.between(start, end));
+				//record(start, end);
 			}
 		} catch (InterruptedException e) {}
+		Instant lastStop = Instant.now();
+		System.out.println("global "+Duration.between(firstStart, lastStop).dividedBy(nCycles).toMillis());
+		System.out.println("parts "+sumCycles.dividedBy(nCycles).toMillis());
 		stop();
 	}
 	

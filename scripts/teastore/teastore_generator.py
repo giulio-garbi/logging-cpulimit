@@ -43,22 +43,22 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	lastDockerScan = Queue()
 	profiling = Value('i', 1)
 	isCliOk = Value('i', 0)
-	pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit, lastDockerScan))
+	#pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit, lastDockerScan))
 	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit, Cli, lastDockerScan))
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit, timeIn+i)) for i in range(Cli)]
 	for p in pWload:
 		p.start()
 	pMCli.start()
 	pMonitor.start()
-	wlquit.get() #pMonitor.join()
+	#wlquit.get() #pMonitor.join()
 	wlquit.get() #pMCli.join()
 	for p in pWload:
 		wlquit.get() #p.join()
 	timeOut = time.time_ns()
 	finalStatsTxt = statsOut.get()+statsOut.get()
 	finalStats = MsStats.fromString(finalStatsTxt)
-	pMonitor.kill()
-	print("pMonitor terminated")
+	#pMonitor.kill()
+	#print("pMonitor terminated")
 	pMCli.kill()
 	print("pMCli terminated")
 	cnt = 0
@@ -130,6 +130,11 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 	lastDockerScan.put("x")
 	wlquit.put("x")
 
+def makeLogLine(req, startTimeNs, exitTimeNs):
+	exitTimeS = exitTimeNs/1000000000.0
+	rtS = (exitTimeNs-startTimeNs)/1000000000.0
+	return LogLine(req, exitTimeS, rtS)
+
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed):
 	rnd = random.default_rng(seed)
 	rqCnt = 0
@@ -137,14 +142,18 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed):
 		startTimeNs = time.time_ns()
 		slTime = sleepTimeS*rnd.exponential(scale=1)
 		time.sleep(slTime)
+
+		reqInTimeNs = time.time_ns()
 		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/", timeout=9999999) as response:
 			response_content = response.read()
+		reqOutTimeNs = time.time_ns()
+		loglineSrv = str(makeLogLine("GET_/tools.descartes.teastore.webui/_HTTP/1.1", reqInTimeNs, reqOutTimeNs))
+
 		rqCnt+=1
 		exitTimeNs = time.time_ns()
-		exitTimeS = exitTimeNs/1000000000.0
-		rtS = (exitTimeNs-startTimeNs)/1000000000.0
-		logline = str(LogLine("main", exitTimeS, rtS))
+		logline = str(makeLogLine("main", startTimeNs, exitTimeNs))
 		allLines.put(logline)
+		allLines.put(loglineSrv)
 	allLines.put("stop")
 	print("wlexit", rqCnt)
 	wlquit.put("x")

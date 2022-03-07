@@ -49,7 +49,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	for p in pWload:
 		p.start()
 	pMCli.start()
-	pMonitor.start()
+	#pMonitor.start()
 	#wlquit.get() #pMonitor.join()
 	wlquit.get() #pMCli.join()
 	for p in pWload:

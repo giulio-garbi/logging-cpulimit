@@ -153,7 +153,7 @@ if __name__ == '__main__':
 	set_start_method("spawn")
 	mf = Matfile()
 	for i in [int(k) for k in sys.argv[1:]]:
-		monTime = 10.0
+		monTime = 320.0
 		print("Running case",i)
 		run_case(i, 1.0, mf, monTime)
 		mf.saveMat('../../data/teastore/out.mat')

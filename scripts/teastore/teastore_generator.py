@@ -41,7 +41,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	statsOut = Queue()
 	wlquit = Queue()
 	lastDockerScan = Queue()
-	profiling = Value('i', 1)
+	profiling = Value('i', 0)
 	isCliOk = Value('i', 0)
 	#pMonitor = Process(target=monitorDocker, args=(profiling, isCliOk, monitoringSleep, statsOut, timeIn/1000000000.0, wlquit, lastDockerScan))
 	pMCli = Process(target=monitorCli, args=(profiling, isCliOk, allLines, statsOut, wlquit, Cli, lastDockerScan))

@@ -97,6 +97,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 	clOk = False
 	lnCnt = 0
 	workersEnded = 0
+	DBGstartTimeS = time.time()
 	while (profiling.value != 0 or isCliOk.value == 0) and workersEnded < nWorkers:
 		log_consumer = MsLogConsumer(30, 0.1)
 		lntxt = allLines.get()
@@ -108,7 +109,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 			lnCnt+=1
 			log_consumer.addMsLog(ml)
 			stats = log_consumer.computeStats()
-			if not clOk and stats.isAcceptable(30, 0.1, 0.1):
+			if time.time() > DBGstartTimeS+320 and not clOk and stats.isAcceptable(30, 0.1, 0.1):
 				print("cli satisfied")
 				clOk = True
 				isCliOk.value = 1

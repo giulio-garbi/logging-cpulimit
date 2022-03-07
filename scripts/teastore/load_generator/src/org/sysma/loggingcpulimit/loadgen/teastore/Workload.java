@@ -72,8 +72,12 @@ public class Workload implements Runnable{
 					Instant end = Instant.now();
 					nCycles++;
 					//record(start, end);
-					if(print && nCycles%100==0)
+					if(print && nCycles%100==0) {
 						System.out.println("cycle "+Duration.between(firstStart, Instant.now()).dividedBy(nCycles).toMillis() + " req " + sumReq.dividedBy(nCycles).toMillis());
+						firstStart = Instant.now();
+						sumReq = Duration.ZERO;
+						nCycles = 0;
+					}
 				}
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block

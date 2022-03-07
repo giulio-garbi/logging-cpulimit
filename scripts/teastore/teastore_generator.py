@@ -55,7 +55,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep):
 	for p in pWload:
 		wlquit.get() #p.join()
 	timeOut = time.time_ns()
-	finalStatsTxt = statsOut.get()+statsOut.get()
+	finalStatsTxt = statsOut.get()#+statsOut.get()
 	finalStats = MsStats.fromString(finalStatsTxt)
 	#pMonitor.kill()
 	#print("pMonitor terminated")

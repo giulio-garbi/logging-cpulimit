@@ -187,20 +187,24 @@ class MsLogConsumer:
             # count the new samples
             self.thrSamples[epIdx] += len(thrS)
 
-    def computeStats(self):
+    def computeStats(self, N):
         stats = MsStats()
         for label in self.epIdxs:
             epIdx = self.epIdxs[label]
             if self.rtSamples[epIdx] < 3*self.K:
+                nrFullBatches = self.rtSamples[epIdx]//self.K
+                fromBatches = 0
                 rtMeans = np.array([float('NaN'), float('NaN')])
                 CI = (float('NaN'), float('NaN'))
             else:
-                rtarr = np.array(self.rtBatches[epIdx][0:self.rtSamples[epIdx]//self.K])
+                nrFullBatches = self.rtSamples[epIdx]//self.K
+                fromBatches = max(0, nrFullBatches-N-1)
+                rtarr = np.array(self.rtBatches[epIdx][fromBatches:nrFullBatches])
                 rtMeans = np.mean(rtarr, axis=1)
                 CI = st.t.interval(0.99, len(rtMeans[1:]) - 1, loc=np.mean(rtMeans[1:]), scale=st.sem(rtMeans[1:]))
             stats.rtCI[label] = CI
             stats.rtMean[label] = np.mean(rtMeans[1:])
-            stats.rtBatchesNum[label] = self.rtSamples[epIdx]//self.K
+            stats.rtBatchesNum[label] = nrFullBatches-fromBatches
             stats.nrSamples[label] = self.rtSamples[epIdx]
             '''if self.dtExitSums[epIdx] > 0:
                 #print(label, self.dtExitSamples[epIdx], self.dtExitSums[epIdx])
@@ -208,10 +212,14 @@ class MsLogConsumer:
             else:
                 stats.thrMean[label] = None'''
             if self.thrSamples[epIdx] < 3*self.K:
+                nrFullBatches = self.thrSamples[epIdx]//self.K
+                fromBatches = 0
                 thrMeans = np.array([float('NaN'), float('NaN')])
                 CI = (float('NaN'), float('NaN'))
             else:
-                thrarr = np.array(self.thrBatches[epIdx][0:self.thrSamples[epIdx]//self.K])
+                nrFullBatches = self.thrSamples[epIdx]//self.K
+                fromBatches = max(0, nrFullBatches-N-1)
+                thrarr = np.array(self.thrBatches[epIdx][fromBatches:nrFullBatches])
                 thrMeans = np.mean(thrarr, axis=1)
                 CI = st.t.interval(0.99, len(thrMeans[1:]) - 1, loc=np.mean(thrMeans[1:]), scale=st.sem(thrMeans[1:]))
             stats.thrCI[label] = CI

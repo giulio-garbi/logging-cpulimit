@@ -77,8 +77,8 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 		webui_logs_txt = get_logs(client, 'webui')
 		webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
 		log_consumer.addMsLog(webui_log)
-		stats = log_consumer.computeStats(99999999)
-		if not pOk and stats.contains('webui-GET_/tools.descartes.teastore.webui/_HTTP/1.1') and stats.isAcceptable(30, 0.05, 0.1):
+		stats = log_consumer.computeStats(100)
+		if not pOk and stats.contains('webui-GET_/tools.descartes.teastore.webui/_HTTP/1.1') and stats.isAcceptable(30, 0.01, 0.1):
 			print("docker satisfied")
 			profiling.value = 0
 			pOk = True
@@ -88,7 +88,7 @@ def monitorDocker(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, 
 	webui_logs_txt = get_logs(client, 'webui')
 	webui_log = parseAccessLogValve('webui', webui_logs_txt, ignoreBeforeS)
 	log_consumer.addMsLog(webui_log)
-	stats = log_consumer.computeStats(99999999)
+	stats = log_consumer.computeStats(100)
 	statsOut.put(str(stats))
 	wlquit.put("x")
 
@@ -110,10 +110,10 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 			ml.addLine(logline)
 			lnCnt+=1
 			log_consumer.addMsLog(ml)
-			stats = log_consumer.computeStats(99999999)
+			stats = log_consumer.computeStats(100)
 			if itr % 1000 == 0:
 				print("nCli; "+str(nWorkers)+"\n"+str(stats))
-			if time.time() > DBGstartTimeS+320 and not clOk and stats.isAcceptable(30, 0.05, 0.1):
+			if time.time() > DBGstartTimeS+320 and not clOk and stats.isAcceptable(30, 0.01, 0.1):
 				print("cli satisfied")
 				clOk = True
 				isCliOk.value = 1
@@ -129,7 +129,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 
 	last_log_consumer = MsLogConsumer(30, 0.1)
 	last_log_consumer.addMsLog(ml)
-	stats = last_log_consumer.computeStats(99999999)
+	stats = last_log_consumer.computeStats(100)
 	statsOut.put(str(stats))
 	print("cli processing ended", lnCnt)
 	lastDockerScan.put("x")
@@ -145,7 +145,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed):
 	rqCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
-		slTime = sleepTimeS#*rnd.exponential(scale=1)
+		slTime = sleepTimeS*rnd.exponential(scale=1)
 		time.sleep(slTime)
 
 		reqInTimeNs = time.time_ns()

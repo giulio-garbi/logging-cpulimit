@@ -44,9 +44,13 @@ class Matfile:
 
 		RTmL = [[stats.rtMean[e] for e in entryNamesL] for stats in self.statsList]
 		RTm = np.array(RTmL, dtype="float")
+		RTmCIL = [[stats.rtCI[e] for e in entryNamesL] for stats in self.statsList]
+		RTmCI = np.array(RTmCIL, dtype="float")
 
 		TmL = [[stats.thrMean[e] for e in entryNamesL] for stats in self.statsList]
 		Tm = np.array(TmL, dtype="float")
+		TmCIL = [[stats.thrCI[e] for e in entryNamesL] for stats in self.statsList]
+		TmCI = np.array(TmCIL, dtype="float")
 
 		NsL = [[stats.nrSamples[e] for e in entryNamesL] for stats in self.statsList]
 		Ns = np.array(NsL, dtype="float")
@@ -57,6 +61,8 @@ class Matfile:
 		outdata['NC'] = NC
 		outdata['RTm'] = RTm
 		outdata['Tm'] = Tm
+		outdata['RTmCI'] = RTmCI
+		outdata['TmCI'] = TmCI
 		outdata['profTime'] = profTime
 		outdata['Ns'] = Ns
 

@@ -123,7 +123,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 			stats = log_consumer.computeStats(99999999999)
 			if itr % 1000 == 0:
 				print("nCli; "+str(nWorkers)+"\n"+str(stats))
-			if time.time() >= DBGstartTimeS+320 not clOk and stats.isAcceptable(30, 0.05, 0.1):
+			if time.time() >= DBGstartTimeS+320 and not clOk and stats.isAcceptable(30, 0.05, 0.1):
 				print("cli satisfied")
 				clOk = True
 				isCliOk.value = 1

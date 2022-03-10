@@ -175,7 +175,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 
 if __name__ == '__main__':
 	set_start_method("spawn")
-	system = start_system('/Users/giulio/git/logging-cpulimit/scripts/teastore_jar/TeaStoreMongo-0.0.1-SNAPSHOT-jar-with-dependencies.jar', 9000)
+	system = start_system('TeaStoreMongo-0.0.1-SNAPSHOT-jar-with-dependencies.jar', 9000)
 	mf = Matfile()
 	for i in [int(k) for k in sys.argv[1:]]:
 		monTime = 10.0

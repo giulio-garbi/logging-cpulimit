@@ -87,7 +87,7 @@ def monitorMsLog(profiling, isCliOk, profilingSleepS, statsOut, ignoreBeforeS, w
 			log_consumer.addMsLog(log)
 		stats = log_consumer.computeStats(99999999999)
 		print(str(stats))
-		if not pOk and stats.isAcceptable(30, 0.01, 0.1):
+		if not pOk and stats.isAcceptable(30, 0.05, 0.1):
 			print("docker satisfied")
 			profiling.value = 0
 			pOk = True
@@ -123,7 +123,7 @@ def monitorCli(profiling, isCliOk, allLines, statsOut, wlquit, nWorkers, lastDoc
 			stats = log_consumer.computeStats(99999999999)
 			if itr % 1000 == 0:
 				print("nCli; "+str(nWorkers)+"\n"+str(stats))
-			if not clOk and stats.isAcceptable(30, 0.01, 0.1):
+			if not clOk and stats.isAcceptable(30, 0.05, 0.1):
 				print("cli satisfied")
 				clOk = True
 				isCliOk.value = 1

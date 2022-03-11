@@ -149,10 +149,10 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed):
 		time.sleep(slTime)
 
 		reqInTimeNs = time.time_ns()
-		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/about", timeout=9999999) as response:
+		with urlopen("http://127.0.0.1:8080/tools.descartes.teastore.webui/", timeout=9999999) as response:
 			response_content = response.read()
 		reqOutTimeNs = time.time_ns()
-		loglineSrv = str(makeLogLine("GET_/tools.descartes.teastore.webui/about_HTTP/1.1", reqInTimeNs, reqOutTimeNs))
+		loglineSrv = str(makeLogLine("GET_/tools.descartes.teastore.webui/_HTTP/1.1", reqInTimeNs, reqOutTimeNs))
 
 		rqCnt+=1
 		exitTimeNs = time.time_ns()

@@ -59,7 +59,7 @@ if __name__ == '__main__':
 	for i in [int(k) for k in sys.argv[1:]]:
 		monTime = 10.0
 		print("Running case",i)
-		run_case(i, 1.0, mf, monTime, system['port'])
+		run_case(i, 1.0, None, monTime, system['port'])
 		time.sleep(5)
 	print("end_of_tests")
 	stop_system(system['proc'])

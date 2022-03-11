@@ -14,7 +14,7 @@ import subprocess
 
 def start_system(jar_path, basePort):
 	port = {'vbs':basePort}
-	proc = {'vbs': subprocess.Popen(["java", "-Xint", "-jar", jar_path, str(basePort), "2000000"])}\
+	proc = {'vbs': subprocess.Popen(["java", "-Xint", "-jar", jar_path, str(basePort), "2000000"])}
 	time.sleep(5)
 	return {'port':port, 'proc':proc}
 

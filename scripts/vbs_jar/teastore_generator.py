@@ -45,6 +45,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 		with urlopen("http://127.0.0.1:"+str(port['vbs'])+"/", timeout=9999999) as response:
 			response_content = response.read()
 		reqOutTimeNs = time.time_ns()
+		print("r",(reqOutTimeNs-reqInTimeNs)//1000000)
 		#loglineSrv = str(makeLogLine("GET_/tools.descartes.teastore.webui/_HTTP/1.1", reqInTimeNs, reqOutTimeNs))
 
 		rqCnt+=1

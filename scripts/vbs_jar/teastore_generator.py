@@ -2,12 +2,9 @@ import docker
 import tarfile
 from io import BytesIO
 import re
-from parseLogs import parseMsLogs
-from batchmeans import *
 from urllib.request import urlopen
 import time
 from multiprocessing import *
-from matfile import *
 import sys
 from numpy import random
 import subprocess
@@ -51,9 +48,6 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 
 		rqCnt+=1
 		exitTimeNs = time.time_ns()
-		logline = str(makeLogLine("main", startTimeNs, exitTimeNs))
-		allLines.put(logline)
-		#allLines.put(loglineSrv)
 	allLines.put("stop")
 	print("wlexit", rqCnt)
 	wlquit.put("x")

@@ -12,7 +12,6 @@ import subprocess
 def start_system(jar_path, basePort):
 	port = {'vbs':basePort}
 	proc = {'vbs': subprocess.Popen(["java", "-Xint", "-jar", jar_path, str(basePort), "2000000"])}
-	time.sleep(5)
 	return {'port':port, 'proc':proc}
 
 def stop_system(proc):
@@ -30,6 +29,8 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep, port):
 	profiling = Value('i', 0)
 	isCliOk = Value('i', 0)
 	pWload = [Process(target=workload, args=(profiling, isCliOk, allLines, 0.05, wlquit, timeIn+i, port)) for i in range(Cli)]
+	for p in pWload:
+		p.start()
 	time.sleep(320)
 
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
@@ -55,7 +56,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 if __name__ == '__main__':
 	set_start_method("spawn")
 	system = start_system('vbs.jar', 9000)
-	time.sleep(10)
+	time.sleep(2)
 	for i in [int(k) for k in sys.argv[1:]]:
 		monTime = 10.0
 		print("Running case",i)

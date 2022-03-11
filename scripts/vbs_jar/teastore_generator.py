@@ -35,6 +35,7 @@ def run_case(Cli, WebuiCpu, mf, monitoringSleep, port):
 
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 	rnd = random.default_rng(seed)
+	sm = 0
 	rqCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
@@ -45,10 +46,11 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 		with urlopen("http://127.0.0.1:"+str(port['vbs'])+"/", timeout=9999999) as response:
 			response_content = response.read()
 		reqOutTimeNs = time.time_ns()
-		print("r",(reqOutTimeNs-reqInTimeNs)//1000000)
+		sm+=(reqOutTimeNs-reqInTimeNs)/1000000.0
+		rqCnt+=1
+		print("r",sm/rqCnt)
 		#loglineSrv = str(makeLogLine("GET_/tools.descartes.teastore.webui/_HTTP/1.1", reqInTimeNs, reqOutTimeNs))
 
-		rqCnt+=1
 		exitTimeNs = time.time_ns()
 	allLines.put("stop")
 	print("wlexit", rqCnt)

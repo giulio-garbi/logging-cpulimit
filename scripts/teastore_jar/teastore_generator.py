@@ -15,12 +15,12 @@ import subprocess
 def start_system(jar_path, basePort):
 	msnames = 'web recommender persistence image auth'.split()
 	port = {'registry': basePort}
-	proc = {'registry': subprocess.Popen(["java", "-Xnojit", "-jar", jar_path, "registry", str(port['registry'])])}
+	proc = {'registry': subprocess.Popen(["java", "-Xint", "-jar", jar_path, "registry", str(port['registry'])])}
 	reg_uri = "http://127.0.0.1:"+str(port['registry'])
 	time.sleep(5)
 	for i in range(len(msnames)):
 		port[msnames[i]] = basePort+i+1
-		proc[msnames[i]] = subprocess.Popen(["java", "-Xnojit", "-jar", jar_path, msnames[i], reg_uri, str(port[msnames[i]])])
+		proc[msnames[i]] = subprocess.Popen(["java", "-Xint", "-jar", jar_path, msnames[i], reg_uri, str(port[msnames[i]])])
 	return {'port':port, 'proc':proc}
 
 def stop_system(proc):

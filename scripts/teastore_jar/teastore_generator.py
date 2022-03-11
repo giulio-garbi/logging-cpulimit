@@ -159,7 +159,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 		time.sleep(slTime)
 
 		reqInTimeNs = time.time_ns()
-		with urlopen("http://127.0.0.1:"+str(port['web'])+"/index/", timeout=9999999) as response:
+		with urlopen("http://127.0.0.1:"+str(port['image'])+"/GetWebImages/", timeout=9999999) as response:
 			response_content = response.read()
 		reqOutTimeNs = time.time_ns()
 		#loglineSrv = str(makeLogLine("GET_/tools.descartes.teastore.webui/_HTTP/1.1", reqInTimeNs, reqOutTimeNs))

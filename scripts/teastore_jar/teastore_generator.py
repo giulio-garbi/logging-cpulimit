@@ -162,7 +162,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 
 		reqInTimeNs = time.time_ns()
 		if rqCnt>0:
-			rttTimeSum += (exitTimeNs-reqInTimeNs)/1000000000.0
+			rttTimeSum += (reqInTimeNs-reqOutTimeNs)/1000000000.0
 			rttTimeCnt+=1
 			print('rtt', rttTimeSum/rttTimeCnt)
 		with urlopen("http://127.0.0.1:"+str(port['image'])+"/GetWebImages/", timeout=9999999) as response:

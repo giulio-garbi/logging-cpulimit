@@ -152,7 +152,7 @@ class MsLogConsumer:
             # count the new samples
             self.rtSamples[epIdx] += len(rtS)
 
-            print(sum(rtS)/len(rtS))
+            print(sum(rtS)/len(rtS), len(rtS), self.rtSamples[epIdx], self.rtSamples[epIdx]//self.K)
 
             '''
             # processing the new time between exits. No batch means needed here, just the average

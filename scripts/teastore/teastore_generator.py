@@ -35,7 +35,7 @@ def change_cpu_quota(container, NC):
 		c.update(cpu_period=cpu_period, cpu_quota=cpu_quota)
 
 def run_case(Cli, WebuiCpu, mf, monitoringSleep):
-	change_cpu_quota("webui", WebuiCpu)
+	#change_cpu_quota("webui", WebuiCpu)
 	timeIn = time.time_ns()
 	allLines = Queue()
 	statsOut = Queue()
@@ -169,7 +169,7 @@ if __name__ == '__main__':
 	for i in [int(k) for k in sys.argv[1:]]:
 		monTime = 320.0
 		print("Running case",i)
-		run_case(i, 1.0, mf, monTime)
+		run_case(i, 4.0, mf, monTime)
 		mf.saveMat('../../data/teastore/out.mat')
 		time.sleep(5)
 	print("end_of_tests")

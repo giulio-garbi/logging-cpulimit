@@ -136,7 +136,6 @@ class MsLogConsumer:
 
             log = mslog.lines[ep]
             rtS = [ll.rtS for ll in log]
-            print(rtS)
 
             # adding the observed response times into the batches, ensuring that each batch is long at most K
             startFrom = 0
@@ -152,6 +151,8 @@ class MsLogConsumer:
 
             # count the new samples
             self.rtSamples[epIdx] += len(rtS)
+
+            print(sum(rtS)/len(rtS))
 
             '''
             # processing the new time between exits. No batch means needed here, just the average

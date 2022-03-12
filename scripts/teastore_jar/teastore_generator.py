@@ -157,7 +157,7 @@ def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 	rttTimeCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
-		slTime = sleepTimeS*rnd.exponential(scale=1)
+		slTime = sleepTimeS#*rnd.exponential(scale=1)
 		time.sleep(slTime)
 
 		reqInTimeNs = time.time_ns()

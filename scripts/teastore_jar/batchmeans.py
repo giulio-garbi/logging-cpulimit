@@ -153,9 +153,10 @@ class MsLogConsumer:
             self.rtSamples[epIdx] += len(rtS)
 
             nrFullBatches = self.rtSamples[epIdx]//self.K
-            rtarr = np.array(self.rtBatches[epIdx][0:nrFullBatches])
-            print(sum(rtS)/len(rtS), len(rtS), self.rtSamples[epIdx], self.rtSamples[epIdx]//self.K)
-            print(np.mean(rtarr, axis=1))
+            if nrFullBatches>1:
+                rtarr = np.array(self.rtBatches[epIdx][0:nrFullBatches])
+                print(sum(rtS)/len(rtS), len(rtS), self.rtSamples[epIdx], self.rtSamples[epIdx]//self.K)
+                print(np.mean(rtarr, axis=1))
 
             '''
             # processing the new time between exits. No batch means needed here, just the average

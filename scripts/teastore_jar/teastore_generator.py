@@ -153,12 +153,18 @@ def makeLogLine(req, startTimeNs, exitTimeNs):
 def workload(profiling, isCliOk, allLines, sleepTimeS, wlquit, seed, port):
 	rnd = random.default_rng(seed)
 	rqCnt = 0
+	rttTimeSum = 0.0
+	rttTimeCnt = 0
 	while profiling.value != 0 or isCliOk.value == 0:
 		startTimeNs = time.time_ns()
 		slTime = sleepTimeS*rnd.exponential(scale=1)
 		time.sleep(slTime)
 
 		reqInTimeNs = time.time_ns()
+		if rqCnt>0:
+			rttTimeSum += (exitTimeNs-reqInTimeNs)/1000000000.0
+			rttTimeCnt+=1
+			print('rtt', rttTimeSum/rttTimeCnt)
 		with urlopen("http://127.0.0.1:"+str(port['image'])+"/GetWebImages/", timeout=9999999) as response:
 			response_content = response.read()
 		reqOutTimeNs = time.time_ns()
